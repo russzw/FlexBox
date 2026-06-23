@@ -1,0 +1,85 @@
+# Flex Box Enterprise - Docker Compose Configuration
+
+version: '3.8'
+
+services:
+  # FlexCorp Gateway
+  gateway:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: flexbox-gateway
+    ports:
+      - "8080:8080"
+    volumes:
+      - ../adapters:/app/adapters
+      - ../models:/app/models
+      - gateway-data:/app/data
+    environment:
+      - FLEXBOX_HOST=0.0.0.0
+      - FLEXBOX_PORT=8080
+      - FLEXBOX_WORKERS=4
+      - FLEXBOX_API_KEY=${FLEXBOX_API_KEY:-changeme}
+      - FLEXBOX_ENABLE_AUTH=true
+      - FLEXBOX_LOG_LEVEL=info
+    deploy:
+      resources:
+        limits:
+          memory: 16G
+          cpus: '4'
+        reservations:
+          memory: 8G
+          cpus: '2'
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import httpx; httpx.get('http://localhost:8080/health').raise_for_status()"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - flexbox-network
+
+  # Model Storage (NFS or local)
+  model-storage:
+    image: nginx:alpine
+    container_name: flexbox-model-storage
+    volumes:
+      - ../models:/usr/share/nginx/html:ro
+    ports:
+      - "8081:80"
+    networks:
+      - flexbox-network
+
+  # Monitoring (optional)
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: flexbox-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    networks:
+      - flexbox-network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: flexbox-grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+    networks:
+      - flexbox-network
+
+volumes:
+  gateway-data:
+  prometheus-data:
+  grafana-data:
+
+networks:
+  flexbox-network:
+    driver: bridge

@@ -1,0 +1,129 @@
+{
+  "name": "flexbox",
+  "displayName": "Flex Box",
+  "description": "Local-first AI coding assistant with LoRA adapter swapping",
+  "version": "0.1.0",
+  "publisher": "flexbox-dev",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Snippets",
+    "Other"
+  ],
+  "activationEvents": [
+    "onLanguage:typescript",
+    "onLanguage:typescriptreact",
+    "onLanguage:javascript",
+    "onLanguage:javascriptreact",
+    "onLanguage:css",
+    "onLanguage:scss",
+    "onLanguage:json",
+    "onLanguage:yaml",
+    "onCommand:flexbox.openChat",
+    "onCommand:flexbox.generateCode",
+    "onCommand:flexbox.openDiff"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "flexbox.openChat",
+        "title": "Flex Box: Open Chat"
+      },
+      {
+        "command": "flexbox.generateCode",
+        "title": "Flex Box: Generate Code"
+      },
+      {
+        "command": "flexbox.openDiff",
+        "title": "Flex Box: Open Diff Panel"
+      },
+      {
+        "command": "flexbox.clearContext",
+        "title": "Flex Box: Clear Context"
+      },
+      {
+        "command": "flexbox.refreshMemory",
+        "title": "Flex Box: Refresh Project Memory"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "flexbox.openChat",
+        "key": "cmd+shift+k",
+        "mac": "cmd+shift+k",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "flexbox.generateCode",
+        "key": "cmd+shift+g",
+        "mac": "cmd+shift+g",
+        "when": "editorTextFocus"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "flexbox",
+          "title": "Flex Box",
+          "icon": "media/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "flexbox": [
+        {
+          "id": "flexbox.chat",
+          "name": "Chat",
+          "type": "webview"
+        },
+        {
+          "id": "flexbox.context",
+          "name": "Project Context",
+          "type": "webview"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Flex Box",
+      "properties": {
+        "flexbox.model": {
+          "type": "string",
+          "default": "Qwen/Qwen2.5-Coder-7B-Instruct",
+          "description": "Base model for inference"
+        },
+        "flexbox.adaptersPath": {
+          "type": "string",
+          "default": "adapters",
+          "description": "Path to adapters directory"
+        },
+        "flexbox.autoApply": {
+          "type": "boolean",
+          "default": false,
+          "description": "Auto-apply changes without confirmation"
+        },
+        "flexbox.maxTokens": {
+          "type": "number",
+          "default": 512,
+          "description": "Maximum tokens to generate"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "lint": "eslint src --ext ts",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.85.0",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.3.0",
+    "@vscode/vsce": "^2.22.0"
+  },
+  "dependencies": {}
+}

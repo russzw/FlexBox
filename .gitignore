@@ -1,0 +1,56 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+*.egg-info/
+*.egg
+dist/
+build/
+
+# Virtual environments
+.conda/
+.python-version
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Project specific
+test_corporate_output/
+test_integration_output/
+*.log
+*.tmp
+
+# Models (large files)
+models/
+*.bin
+*.safetensors
+*.pt
+*.pth
+
+# Training outputs
+output/
+runs/
+wandb/
+checkpoints/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Environment
+.env
+.env.local
+*.env
