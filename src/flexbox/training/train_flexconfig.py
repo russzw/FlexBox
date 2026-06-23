@@ -238,7 +238,7 @@ def train_flexconfig(
         warmup_steps=10,
         logging_steps=5,
         save_strategy="epoch",
-        fp16=True,
+        fp16=False,
         bf16=False,
         report_to="none",
         remove_unused_columns=False,
