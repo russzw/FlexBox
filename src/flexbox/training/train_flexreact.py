@@ -20,9 +20,10 @@ from datasets import Dataset
 from transformers import (
     AutoModelForCausalLM,
     AutoTokenizer,
+    BitsAndBytesConfig,
     TrainingArguments,
 )
-from peft import LoraConfig, get_peft_model
+from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
 from trl import SFTTrainer
 
 
@@ -206,17 +207,26 @@ def train_flexreact(
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
     
+    bnb_config = BitsAndBytesConfig(
+        load_in_4bit=True,
+        bnb_4bit_quant_type="nf4",
+        bnb_4bit_compute_dtype="float16",
+        bnb_4bit_use_double_quant=True,
+    )
+    
     model = AutoModelForCausalLM.from_pretrained(
         model_name,
-        torch_dtype="auto",
+        quantization_config=bnb_config,
         device_map="auto",
     )
+    model = prepare_model_for_kbit_training(model)
     
     lora_config = LoraConfig(
         r=rank,
         lora_alpha=rank * 2,
         target_modules=["q_proj", "v_proj", "k_proj", "o_proj"],
         lora_dropout=0.05,
+        use_rslora=False,
         bias="none",
         task_type="CAUSAL_LM",
     )
@@ -248,8 +258,7 @@ def train_flexreact(
         model=model,
         args=training_args,
         train_dataset=dataset,
-        tokenizer=tokenizer,
-        max_seq_length=max_seq_length,
+        processing_class=tokenizer,
     )
     
     print("Starting training...")
