@@ -213,15 +213,20 @@ def train_flexcss(
     training_args = TrainingArguments(
         output_dir=output_dir,
         num_train_epochs=epochs,
-        per_device_train_batch_size=batch_size,
+        per_device_train_batch_size=1,
+        gradient_accumulation_steps=batch_size,
         learning_rate=learning_rate,
         warmup_steps=10,
         logging_steps=5,
         save_strategy="epoch",
-        fp16=False,
+        fp16=True,
         bf16=False,
         report_to="none",
         remove_unused_columns=False,
+        gradient_checkpointing=True,
+        optim="paged_adamw_8bit",
+        max_grad_norm=0.3,
+        weight_decay=0.01,
     )
     
     trainer = SFTTrainer(
