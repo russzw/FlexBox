@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flex Box - AI Code Assistant</title>
+    <style>
+        :root {
+            --bg-primary: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-tertiary: #0f3460;
+            --text-primary: #e6e6e6;
+            --text-secondary: #a0a0a0;
+            --accent: #00d9ff;
+            --accent-hover: #00b8d9;
+            --success: #4caf50;
+            --error: #f44336;
+            --border: #2a2a4a;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background: var(--bg-secondary);
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo h1 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .logo span {
+            color: var(--accent);
+        }
+
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--error);
+        }
+
+        .status-dot.connected {
+            background: var(--success);
+        }
+
+        .main-container {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 16px;
+        }
+
+        .sidebar h3 {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+
+        .adapter-list {
+            list-style: none;
+            margin-bottom: 24px;
+        }
+
+        .adapter-item {
+            padding: 10px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 4px;
+            transition: background 0.2s;
+        }
+
+        .adapter-item:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .adapter-item.active {
+            background: var(--bg-tertiary);
+            border-left: 3px solid var(--accent);
+        }
+
+        .adapter-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .adapter-icon.react { background: #282c34; color: #61dafb; }
+        .adapter-icon.css { background: #264de4; color: white; }
+        .adapter-icon.config { background: #4caf50; color: white; }
+
+        .adapter-info {
+            flex: 1;
+        }
+
+        .adapter-name {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .adapter-desc {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .project-info {
+            margin-top: auto;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .info-item {
+            background: var(--bg-primary);
+            padding: 8px 10px;
+            border-radius: 6px;
+        }
+
+        .info-label {
+            font-size: 10px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+
+        .info-value {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+        }
+
+        .message {
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            max-width: 800px;
+        }
+
+        .message.user {
+            align-self: flex-end;
+        }
+
+        .message.assistant {
+            align-self: flex-start;
+        }
+
+        .message-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .message-bubble {
+            padding: 12px 16px;
+            border-radius: 12px;
+            line-height: 1.5;
+        }
+
+        .message.user .message-bubble {
+            background: var(--accent);
+            color: var(--bg-primary);
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.assistant .message-bubble {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-bottom-left-radius: 4px;
+        }
+
+        .message-bubble pre {
+            background: var(--bg-primary);
+            padding: 12px;
+            border-radius: 6px;
+            overflow-x: auto;
+            margin: 8px 0;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+
+        .message-bubble code {
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 13px;
+        }
+
+        .message-bubble pre code {
+            background: none;
+            padding: 0;
+        }
+
+        .message-bubble code:not(pre code) {
+            background: var(--bg-tertiary);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .adapter-badge {
+            display: inline-block;
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            background: var(--bg-tertiary);
+            color: var(--accent);
+            margin-top: 8px;
+        }
+
+        .insert-btn {
+            margin-top: 8px;
+            padding: 6px 12px;
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+
+        .insert-btn:hover {
+            background: var(--accent);
+            color: var(--bg-primary);
+        }
+
+        .generating {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 16px;
+            color: var(--text-secondary);
+        }
+
+        .spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .input-area {
+            padding: 16px 24px;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border);
+        }
+
+        .input-row {
+            display: flex;
+            gap: 12px;
+            max-width: 800px;
+        }
+
+        input {
+            flex: 1;
+            padding: 12px 16px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input:focus {
+            border-color: var(--accent);
+        }
+
+        button {
+            padding: 12px 24px;
+            background: var(--accent);
+            color: var(--bg-primary);
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            background: var(--accent-hover);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .welcome {
+            text-align: center;
+            padding: 48px 24px;
+            color: var(--text-secondary);
+        }
+
+        .welcome h2 {
+            font-size: 20px;
+            margin-bottom: 12px;
+            color: var(--text-primary);
+        }
+
+        .welcome p {
+            margin-bottom: 8px;
+        }
+
+        .welcome code {
+            background: var(--bg-tertiary);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+
+        .shortcuts {
+            margin-top: 24px;
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+        }
+
+        .shortcut {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+        }
+
+        kbd {
+            background: var(--bg-tertiary);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <h1>Flex<span>Box</span></h1>
+        </div>
+        <div class="status">
+            <div class="status-dot" id="statusDot"></div>
+            <span id="statusText">Disconnected</span>
+        </div>
+    </header>
+    
+    <div class="main-container">
+        <aside class="sidebar">
+            <h3>Adapters</h3>
+            <ul class="adapter-list">
+                <li class="adapter-item active" data-adapter="flexreact">
+                    <div class="adapter-icon react">R</div>
+                    <div class="adapter-info">
+                        <div class="adapter-name">FlexReact</div>
+                        <div class="adapter-desc">React/JSX components</div>
+                    </div>
+                </li>
+                <li class="adapter-item" data-adapter="flexcss">
+                    <div class="adapter-icon css">C</div>
+                    <div class="adapter-info">
+                        <div class="adapter-name">FlexCSS</div>
+                        <div class="adapter-desc">Tailwind CSS styles</div>
+                    </div>
+                </li>
+                <li class="adapter-item" data-adapter="flexconfig">
+                    <div class="adapter-icon config">F</div>
+                    <div class="adapter-info">
+                        <div class="adapter-name">FlexConfig</div>
+                        <div class="adapter-desc">Configuration files</div>
+                    </div>
+                </li>
+            </ul>
+            
+            <div class="project-info">
+                <h3>Project Info</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Framework</div>
+                        <div class="info-value" id="framework">-</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Styling</div>
+                        <div class="info-value" id="styling">-</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Files</div>
+                        <div class="info-value" id="fileCount">-</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Status</div>
+                        <div class="info-value" id="serverStatus">Offline</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+        
+        <main class="chat-area">
+            <div class="messages" id="messages">
+                <div class="welcome">
+                    <h2>Welcome to Flex Box</h2>
+                    <p>AI-powered code generation with specialized adapters</p>
+                    <p>Start the server: <code>python -m flexbox.server</code></p>
+                    <div class="shortcuts">
+                        <div class="shortcut">
+                            <kbd>Enter</kbd>
+                            <span>Send message</span>
+                        </div>
+                        <div class="shortcut">
+                            <kbd>Ctrl+K</kbd>
+                            <span>Clear chat</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="input-area">
+                <div class="input-row">
+                    <input type="text" id="promptInput" placeholder="Describe what you want to generate..." />
+                    <button id="sendBtn" onclick="sendMessage()">Generate</button>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <script>
+        const API_BASE = 'http://127.0.0.1:8181';
+        let selectedAdapter = 'flexreact';
+        let isGenerating = false;
+        
+        // Check server status
+        async function checkStatus() {
+            try {
+                const res = await fetch(`${API_BASE}/health`);
+                const data = await res.json();
+                document.getElementById('statusDot').classList.add('connected');
+                document.getElementById('statusText').textContent = 'Connected';
+                document.getElementById('serverStatus').textContent = 'Online';
+                return true;
+            } catch {
+                document.getElementById('statusDot').classList.remove('connected');
+                document.getElementById('statusText').textContent = 'Disconnected';
+                document.getElementById('serverStatus').textContent = 'Offline';
+                return false;
+            }
+        }
+        
+        // Adapter selection
+        document.querySelectorAll('.adapter-item').forEach(item => {
+            item.addEventListener('click', () => {
+                document.querySelectorAll('.adapter-item').forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+                selectedAdapter = item.dataset.adapter;
+            });
+        });
+        
+        // Send message
+        async function sendMessage() {
+            if (isGenerating) return;
+            
+            const input = document.getElementById('promptInput');
+            const prompt = input.value.trim();
+            if (!prompt) return;
+            
+            input.value = '';
+            isGenerating = true;
+            updateUI();
+            
+            addMessage('user', prompt);
+            
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/generate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        prompt,
+                        adapter: selectedAdapter,
+                    }),
+                });
+                
+                const data = await res.json();
+                
+                if (data.error) {
+                    addMessage('assistant', `Error: ${data.error}`);
+                } else {
+                    addMessage('assistant', data.text, data.adapter_used);
+                }
+            } catch (err) {
+                addMessage('assistant', `Connection error: ${err.message}\n\nMake sure the server is running:\npython -m flexbox.server`);
+            } finally {
+                isGenerating = false;
+                updateUI();
+            }
+        }
+        
+        function addMessage(role, content, adapter) {
+            const messages = document.getElementById('messages');
+            
+            // Remove welcome message
+            const welcome = messages.querySelector('.welcome');
+            if (welcome) welcome.remove();
+            
+            const div = document.createElement('div');
+            div.className = `message ${role}`;
+            
+            let html = '';
+            
+            if (role === 'assistant') {
+                html += `<div class="message-header">Flex Box</div>`;
+            }
+            
+            html += `<div class="message-bubble">${renderMarkdown(content)}</div>`;
+            
+            if (adapter) {
+                html += `<div class="adapter-badge">Adapter: ${adapter}</div>`;
+            }
+            
+            if (role === 'assistant' && content.includes('```')) {
+                const codeMatch = content.match(/```\w*\n([\s\S]*?)```/);
+                if (codeMatch) {
+                    const code = codeMatch[1].trim();
+                    html += `<button class="insert-btn" onclick="copyCode(this)" data-code="${escapeAttr(code)}">Copy Code</button>`;
+                }
+            }
+            
+            div.innerHTML = html;
+            messages.appendChild(div);
+            messages.scrollTop = messages.scrollHeight;
+        }
+        
+        function renderMarkdown(text) {
+            let html = text
+                .replace(/```(\w*)\n([\s\S]*?)```/g, '<pre><code>$2</code></pre>')
+                .replace(/```(.*?)```/g, '<code>$1</code>')
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/`([^`]+)`/g, '<code>$1</code>')
+                .replace(/^- (.*)/gm, '<li>$1</li>')
+                .replace(/\n/g, '<br>');
+            
+            // Wrap consecutive li elements
+            html = html.replace(/(<li>.*?<\/li>)(?:<br>)*/gs, (match) => {
+                return '<ul>' + match.replace(/<br>/g, '') + '</ul>';
+            });
+            
+            return html;
+        }
+        
+        function escapeAttr(str) {
+            return str.replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+        
+        function copyCode(btn) {
+            const code = btn.dataset.code;
+            navigator.clipboard.writeText(code);
+            btn.textContent = 'Copied!';
+            setTimeout(() => btn.textContent = 'Copy Code', 2000);
+        }
+        
+        function updateUI() {
+            document.getElementById('sendBtn').disabled = isGenerating;
+            document.getElementById('promptInput').disabled = isGenerating;
+            
+            if (isGenerating) {
+                const messages = document.getElementById('messages');
+                const gen = document.createElement('div');
+                gen.className = 'generating';
+                gen.id = 'generating';
+                gen.innerHTML = '<div class="spinner"></div> Generating...';
+                messages.appendChild(gen);
+                messages.scrollTop = messages.scrollHeight;
+            } else {
+                const gen = document.getElementById('generating');
+                if (gen) gen.remove();
+            }
+        }
+        
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !isGenerating) {
+                sendMessage();
+            }
+            if (e.ctrlKey && e.key === 'k') {
+                document.getElementById('messages').innerHTML = '';
+            }
+        });
+        
+        // Init
+        checkStatus();
+        setInterval(checkStatus, 10000);
+    </script>
+</body>
+</html>

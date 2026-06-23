@@ -33,6 +33,8 @@ test_corporate_output/
 test_integration_output/
 *.log
 *.tmp
+test.py
+test_local.py
 
 # Models (large files)
 models/
@@ -40,6 +42,10 @@ models/
 *.safetensors
 *.pt
 *.pth
+
+# Adapter checkpoints (keep only final adapters)
+adapters/*/checkpoint-*/
+trained_adapters.zip
 
 # Training outputs
 output/
@@ -54,3 +60,6 @@ checkpoints/
 .env
 .env.local
 *.env
+
+# Node
+node_modules/
