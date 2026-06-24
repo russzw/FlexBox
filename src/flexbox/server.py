@@ -125,7 +125,7 @@ class FlexBoxServer:
 
     async def handle_context(self, request: web.Request) -> web.Response:
         """Get project context."""
-        context = self.memory.get_system_context()
+        context = self.memory.get_system_prompt_context()
         return web.json_response({"context": context})
 
     async def handle_index(self, request: web.Request) -> web.Response:
