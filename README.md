@@ -26,34 +26,18 @@ Flex Box is a specialized, local-first multi-agent development environment power
 pip install -r requirements.txt
 ```
 
-### 2. Train Adapters (Optional)
-
-If you have trained adapters from Google Colab, place them in the `adapters/` folder:
-
-```
-adapters/
-├── flexreact/
-│   ├── adapter_config.json
-│   └── adapter_model.safetensors
-├── flexcss/
-│   ├── adapter_config.json
-│   └── adapter_model.safetensors
-└── flexconfig/
-    ├── adapter_config.json
-    └── adapter_model.safetensors
-```
-
-Or use the training scripts with Google Colab (see `COLAB_TRAINING.md`).
-
-### 3. Start the Server
+### 2. Start the Server
 
 ```bash
 python -m flexbox.server
 ```
 
-The server starts on `http://127.0.0.1:8181`.
+The server starts on `http://127.0.0.1:8181`. Open this URL in your browser to access the Web UI.
 
-### 4. Use Flex Box
+### 3. Use Flex Box
+
+**Web UI:**
+Navigate to `http://127.0.0.1:8181` in your browser.
 
 **CLI:**
 ```bash
@@ -62,11 +46,33 @@ python -m flexbox.cli generate "Create a React button" --adapter flexreact
 python -m flexbox.cli adapters
 ```
 
-**Web UI:**
-Open `web-ui/index.html` in your browser.
-
 **VS Code Extension:**
 Install the extension from `vscode-extension/` (see below).
+
+---
+
+## Model Sizes & Hardware Requirements
+
+Flex Box supports different model sizes depending on your available RAM:
+
+| Model | RAM Required | Adapter Compatible | Quality |
+|-------|-------------|-------------------|---------|
+| `Qwen2.5-Coder-0.5B` | 4GB+ | Requires retraining | Basic |
+| `Qwen2.5-Coder-1.5B` | 8GB+ | Requires retraining | Good |
+| `Qwen2.5-Coder-7B` | 16GB+ | Yes (trained adapters) | Best |
+
+### Important: Adapter Compatibility
+
+**LoRA adapters are model-size specific.** Adapters trained on one model size **cannot** be used with a different size. The default adapters included were trained on the 7B model.
+
+- **8GB RAM (like your system):** Server runs with 0.5B model. Adapters won't load (size mismatch), but the base model still generates code.
+- **16GB+ RAM:** Full experience with 7B model and trained adapters.
+- **Retrain for your model:** Use Google Colab to train adapters on 0.5B or 1.5B (see `COLAB_TRAINING.md`).
+
+The server automatically:
+1. Detects available RAM
+2. Selects the appropriate model
+3. Falls back to base model if adapters are incompatible
 
 ---
 
@@ -112,6 +118,7 @@ Install the extension from `vscode-extension/` (see below).
 
 | Endpoint | Method | Description |
 |----------|--------|-------------|
+| `/` | GET | Web UI |
 | `/health` | GET | Health check |
 | `/api/v1/generate` | POST | Generate code from prompt |
 | `/api/v1/route` | POST | Route prompt to adapter |
@@ -183,6 +190,19 @@ python src/flexbox/training/train_flexreact.py \
     --rank 8
 ```
 
+### Retraining for Low-RAM Systems
+
+If you have 8GB RAM, train adapters on the 0.5B model in Colab:
+
+```python
+!python3 src/flexbox/training/train_flexreact.py \
+    --model Qwen/Qwen2.5-Coder-0.5B-Instruct \
+    --dataset datasets/react_train.jsonl \
+    --output adapters/flexreact \
+    --epochs 3 \
+    --rank 8
+```
+
 ---
 
 ## Enterprise Features
@@ -216,13 +236,15 @@ pipeline.run()
 
 ## Configuration
 
-### Environment Variables
+### Server Config (src/flexbox/server.py)
 
-```bash
-FLEXBOX_MODEL=Qwen/Qwen2.5-Coder-7B-Instruct
-FLEXBOX_HOST=127.0.0.1
-FLEXBOX_PORT=8181
-FLEXBOX_ADAPTERS_DIR=adapters
+```python
+class ServerConfig:
+    host: str = "127.0.0.1"
+    port: int = 8181
+    model_name: str = "Qwen/Qwen2.5-Coder-0.5B-Instruct"  # Change to 7B for full experience
+    adapters_dir: str = "adapters"
+    max_tokens: int = 512
 ```
 
 ### VS Code Settings
@@ -240,10 +262,39 @@ FLEXBOX_ADAPTERS_DIR=adapters
 
 ## Requirements
 
+### Minimum (0.5B model)
 - Python 3.10+
 - PyTorch 2.0+
-- 8GB+ RAM (16GB recommended)
+- 4GB RAM
+- No GPU required
+
+### Recommended (7B model)
+- Python 3.10+
+- PyTorch 2.0+
+- 16GB+ RAM
 - GPU optional (significantly faster)
+
+---
+
+## Troubleshooting
+
+### "CUDA out of memory" or PC crashes
+- You don't have enough GPU VRAM
+- Server falls back to CPU mode automatically
+- Close other applications to free RAM
+
+### "size mismatch" adapter errors
+- Adapters trained on 7B can't load on 0.5B model
+- Server falls back to base model (no adapter specialization)
+- Retrain adapters on your model size (see Training section)
+
+### Server not responding
+- Check if port 8181 is in use: `netstat -ano | findstr 8181`
+- Try a different port in `server.py`
+
+### Model download slow
+- First run downloads the model (~1-10GB depending on size)
+- Subsequent runs use the cache
 
 ---
 
