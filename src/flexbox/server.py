@@ -89,10 +89,12 @@ class FlexBoxServer:
                 adapter_name = "base"
 
             # Generate
+            from flexbox.core.engine import GenerationConfig
+            gen_config = GenerationConfig(max_new_tokens=max_tokens)
             result = self.engine.generate(
                 prompt=prompt,
+                config=gen_config,
                 system_prompt=system_prompt or project_context,
-                max_new_tokens=max_tokens,
             )
 
             return web.json_response({
