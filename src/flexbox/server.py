@@ -23,7 +23,7 @@ from flexbox.core.engine import InferenceEngine
 class ServerConfig:
     host: str = "127.0.0.1"
     port: int = 8181
-    model_name: str = "Qwen/Qwen2.5-Coder-7B-Instruct"
+    model_name: str = "Qwen/Qwen2.5-Coder-1.5B-Instruct"
     adapters_dir: str = "adapters"
     max_tokens: int = 512
 
