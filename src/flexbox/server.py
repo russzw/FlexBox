@@ -44,7 +44,7 @@ class FlexBoxServer:
         print(f"Loading model: {self.config.model_name}")
         self.engine = InferenceEngine(
             model_name=self.config.model_name,
-            use_quantization=True,
+            use_quantization=False,  # Set to True if you have enough GPU VRAM
         )
         self.engine.load_model()
         print("Model loaded successfully")

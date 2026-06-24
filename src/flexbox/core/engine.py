@@ -100,19 +100,36 @@ class InferenceEngine:
         if self._tokenizer.pad_token is None:
             self._tokenizer.pad_token = self._tokenizer.eos_token
         
+        # Check GPU availability
+        gpu_available = torch.cuda.is_available()
+        gpu_memory = torch.cuda.get_device_properties(0).total_mem if gpu_available else 0
+        model_size_gb = 4.0  # Approximate size with quantization
+        
+        use_gpu = gpu_available and (gpu_memory / 1024**3) > model_size_gb
+        
         model_kwargs = {
             "trust_remote_code": True,
-            "torch_dtype": torch.float16,
-            "device_map": self.device,
         }
         
-        if self.use_quantization:
+        if use_gpu and self.use_quantization:
+            # GPU with quantization
+            model_kwargs["device_map"] = "auto"
             model_kwargs["quantization_config"] = BitsAndBytesConfig(
                 load_in_4bit=True,
                 bnb_4bit_compute_dtype=torch.float16,
                 bnb_4bit_use_double_quant=True,
                 bnb_4bit_quant_type="nf4",
             )
+            print(f"Using GPU with 4-bit quantization")
+        elif use_gpu:
+            # GPU without quantization
+            model_kwargs["device_map"] = "auto"
+            model_kwargs["torch_dtype"] = torch.float16
+            print(f"Using GPU with float16")
+        else:
+            # CPU mode
+            model_kwargs["torch_dtype"] = torch.float32
+            print(f"Using CPU (no GPU available or insufficient VRAM)")
         
         self._model = AutoModelForCausalLM.from_pretrained(
             self.model_name,
