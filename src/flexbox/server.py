@@ -101,7 +101,7 @@ class FlexBoxServer:
                 "text": result.text,
                 "adapter_used": adapter_name,
                 "tokens_generated": result.tokens_generated,
-                "latency_ms": result.latency_ms,
+                "latency_ms": result.generation_time_ms,
             })
 
         except Exception as e:
