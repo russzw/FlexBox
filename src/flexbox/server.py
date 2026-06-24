@@ -55,7 +55,7 @@ class FlexBoxServer:
             "status": "healthy",
             "uptime": time.time() - self._start_time,
             "model": self.config.model_name,
-            "adapters": list(self.adapter_manager.scan_adapters().keys()),
+            "adapters": [a.name for a in self.adapter_manager.list_adapters()],
         })
 
     async def handle_generate(self, request: web.Request) -> web.Response:
@@ -115,11 +115,11 @@ class FlexBoxServer:
 
     async def handle_adapters(self, request: web.Request) -> web.Response:
         """List available adapters."""
-        adapters = self.adapter_manager.scan_adapters()
+        adapters = self.adapter_manager.list_adapters()
         return web.json_response({
             "adapters": {
-                name: {"path": str(path)}
-                for name, path in adapters.items()
+                a.name: {"path": str(a.path)}
+                for a in adapters
             }
         })
 
