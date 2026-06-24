@@ -128,9 +128,18 @@ class FlexBoxServer:
         context = self.memory.get_system_context()
         return web.json_response({"context": context})
 
+    async def handle_index(self, request: web.Request) -> web.Response:
+        """Serve the Web UI."""
+        index_path = Path(__file__).parent.parent.parent / "web-ui" / "index.html"
+        if index_path.exists():
+            html = index_path.read_text(encoding="utf-8")
+            return web.Response(text=html, content_type="text/html")
+        return web.Response(text="Web UI not found. Use API endpoints directly.", content_type="text/plain")
+
     def create_app(self) -> web.Application:
         """Create the aiohttp application."""
         app = web.Application()
+        app.router.add_get("/", self.handle_index)
         app.router.add_get("/health", self.handle_health)
         app.router.add_post("/api/v1/generate", self.handle_generate)
         app.router.add_post("/api/v1/route", self.handle_route)
