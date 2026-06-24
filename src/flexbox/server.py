@@ -76,7 +76,7 @@ class FlexBoxServer:
                 adapter_name = result.get("primary_adapter", "flexreact")
 
             # Get project context
-            project_context = self.memory.get_system_context()
+            project_context = self.memory.get_system_prompt_context()
 
             # Generate
             self.engine.swap_adapter(adapter_name)
