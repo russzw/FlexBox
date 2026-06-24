@@ -78,8 +78,17 @@ class FlexBoxServer:
             # Get project context
             project_context = self.memory.get_system_prompt_context()
 
+            # Try to load adapter, fall back to base model if incompatible
+            adapter_loaded = False
+            try:
+                self.engine.swap_adapter(adapter_name)
+                adapter_loaded = True
+            except Exception as adapter_error:
+                print(f"Warning: Could not load adapter '{adapter_name}': {adapter_error}")
+                print("Generating with base model (no adapter)")
+                adapter_name = "base"
+
             # Generate
-            self.engine.swap_adapter(adapter_name)
             result = self.engine.generate(
                 prompt=prompt,
                 system_prompt=system_prompt or project_context,
